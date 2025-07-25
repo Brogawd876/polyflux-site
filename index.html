@@ -7,7 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
 
   <style>
     body {
@@ -422,28 +425,29 @@
           </div>
           <div class="bg-gray-50 p-10">
             <h3 class="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h3>
-            <form class="space-y-6">
+            <form id="contactForm" class="space-y-6" action="https://formspree.io/f/yasserwright@polyflux.net" method="POST">
               <div>
-                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-                <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <label for="name" class="block text-sm font-medium text-gray-700">Name*</label>
+                <input type="text" id="name" name="name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               </div>
               <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" id="email" name="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email*</label>
+                <input type="email" id="email" name="email" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               </div>
               <div>
-                <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
-                <input type="text" id="subject" name="subject" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <label for="subject" class="block text-sm font-medium text-gray-700">Subject*</label>
+                <input type="text" id="subject" name="subject" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
               </div>
               <div>
-                <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
-                <textarea id="message" name="message" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <label for="message" class="block text-sm font-medium text-gray-700">Message*</label>
+                <textarea id="message" name="message" rows="4" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
               </div>
               <div>
                 <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
                   Send Message
                 </button>
               </div>
+              <div id="formStatus" class="hidden text-center text-sm"></div>
             </form>
           </div>
         </div>
@@ -544,6 +548,50 @@
     document.addEventListener('DOMContentLoaded', function() {
       const mobileMenuButton = document.querySelector('button[aria-label="Mobile menu"]');
       // This would toggle a mobile menu in a complete implementation
+      
+      // Handle contact form submission
+      const contactForm = document.getElementById('contactForm');
+      const formStatus = document.getElementById('formStatus');
+      
+      if (contactForm) {
+        contactForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const submitButton = contactForm.querySelector('button[type="submit"]');
+          const originalButtonText = submitButton.textContent;
+          
+          // Show loading state
+          submitButton.disabled = true;
+          submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sending...';
+          
+          try {
+            const response = await fetch(contactForm.action, {
+              method: 'POST',
+              body: new FormData(contactForm),
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+            
+            if (response.ok) {
+              formStatus.textContent = 'Message sent successfully! We will get back to you soon.';
+              formStatus.classList.remove('hidden', 'text-red-500');
+              formStatus.classList.add('text-green-500');
+              contactForm.reset();
+            } else {
+              throw new Error('Form submission failed');
+            }
+          } catch (error) {
+            formStatus.textContent = 'Oops! There was a problem sending your message. Please try again later.';
+            formStatus.classList.remove('hidden', 'text-green-500');
+            formStatus.classList.add('text-red-500');
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+            formStatus.classList.remove('hidden');
+          }
+        });
+      }
     });
     
     // Smooth scrolling for anchor links
